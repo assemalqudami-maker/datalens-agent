@@ -1,0 +1,7 @@
+date,branch,product,quantity,revenue,cost,customer_note
+2026-10-01,Sanaa,Honey,2,100,60,Regular customer
+2026-10-01,Aden,Coffee,3,90,45,Deliver tomorrow
+2026-10-02,Sanaa,Honey,1,50,30,
+2026-10-02,Aden,Tea,4,80,40,Gift pack
+2026-10-03,Sanaa,Coffee,2,60,30,Pickup
+2026-10-03,Aden,Honey,3,150,90,Repeat order

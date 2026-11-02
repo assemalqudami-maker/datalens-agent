@@ -1,0 +1,6 @@
+google-genai==1.75.0
+mcp==1.30.0
+pandas==2.3.3
+streamlit==1.66.1
+python-dotenv==1.2.4
+jsonschema==4.26.0
