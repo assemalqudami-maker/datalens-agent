@@ -1,29 +1,24 @@
-# Cost analysis — live measurement pending
+# Live cost analysis
 
-**Provider:** Google Gemini Developer API. **Default model:** `gemini-3.5-flash-lite`.
-**Pricing checked:** 2026-11-03. [Official pricing](https://ai.google.dev/gemini-api/docs/pricing).
+Provider: Gemini; model: `gemini-3.5-flash-lite`.
+Run time (UTC): 2026-11-03T00:43:29.179905+00:00
 
-| Standard text pricing | USD per 1 million tokens |
-|---|---:|
-| Input | 0.30 |
-| Output, including thinking | 2.50 |
+Standard paid-rate equivalent; not a billing receipt.
+Source: https://ai.google.dev/gemini-api/docs/pricing
 
-The optional legacy `gemini-2.5-flash-lite` profile uses $0.10 input and $0.40 output per million, but availability depends on the account. Model selection never silently falls back. Verify access and rates before changing models.
+| Case | Status | Input tokens | Output + thinking | USD | Uncertain |
+|---|---|---:|---:|---:|---|
+| success_1 | completed | 8377 | 323 | 0.00332060 | False |
+| quality | completed | 4492 | 215 | 0.00188510 | False |
+| summary | completed | 6353 | 235 | 0.00249340 | False |
+| comparison | completed | 10577 | 672 | 0.00485310 | False |
+| filter | completed | 4589 | 331 | 0.00220420 | False |
+| near_failure_recovery | completed | 6143 | 386 | 0.00280790 | False |
+| explicit_failure | failed | 5875 | 261 | 0.00241500 | False |
+| attack_cells | completed | 4400 | 253 | 0.00195250 | False |
+| attack_path | completed | 6432 | 351 | 0.00280710 | False |
+| attack_write | completed | 10634 | 543 | 0.00454770 | False |
 
-## Calculation
-
-`cost_usd = input_tokens × input_rate / 1,000,000 + (candidate_tokens + thinking_tokens) × output_rate / 1,000,000`
-
-Every generation is recorded separately and summed per task, including failed attempts. Repeated prompt/context tokens are charged again. Cached input is conservatively counted at the standard input rate; no caching discount is assumed. No grounding/search APIs are used. Provider free-tier billing may be $0 even when this paid-rate equivalent is positive. Hosting is separate.
-
-**Illustration only, not a measurement:** 2,000 input tokens and 500 output tokens at the default rates equal $0.00185.
-
-## Budget enforcement
-
-Default cap is $0.10/task and $1.00/day across the application. `count_tokens` includes system instructions and function declarations. Each generation reserves 115% of the counted input plus 512 input tokens and twice the configured output maximum. Atomic SQLite reservations prevent concurrent tasks from separately spending the same daily allowance. SDK retries are disabled. A timed-out call may still have incurred a provider charge: retain its reservation, mark cost uncertain, and stop. Missing usage metadata also stops the task. A process crash leaves its reservation intact. Guards rely on the configured rates and provider behavior; configure provider-side spending limits as well if required.
-
-## Current measured results
-
-**Live calls completed during initial build: 0. Average real task cost: unavailable.** No API key was available in the build environment. Tests use an explicitly labelled scripted model and a real MCP subprocess; their simulated token counts are not Gemini measurements. Do not use them to claim a real average cost or successful live-provider integration.
-
-Run **Actions → Live Gemini evaluation** after adding the `GEMINI_API_KEY` repository secret. The workflow preserves all original JSONL traces, per-case tokens, failures and a generated `cost_analysis.md` in its `live-evidence` artifact. Review that evidence and replace this pending report with the real table before submission. The mean includes all attempted cases, not just successful ones; uncertain reservations are clearly marked.
+Mean across all 10 attempted cases (including failures): $0.00292866.
+Unknown-usage calls retain their reservation and must not be presented as exact measured usage.
+Inspect traces and final answers manually; automated assertions do not prove immunity to all prompt injection.
