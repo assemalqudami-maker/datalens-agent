@@ -1,4 +1,6 @@
+import asyncio
 import math
+import time
 from dataclasses import dataclass
 
 from google import genai
@@ -25,6 +27,8 @@ class Gemini:
         if not api_key.strip():
             raise ConfigurationError("GEMINI_API_KEY is missing. Add it to deployment secrets or enter your key.")
         self.settings = settings
+        self._call_lock = asyncio.Lock()
+        self._last_call_at = 0.0
         self.client = genai.Client(api_key=api_key, http_options=types.HttpOptions(
             timeout=settings.timeout_seconds * 1000,
             retry_options=types.HttpRetryOptions(attempts=1),
@@ -41,18 +45,27 @@ class Gemini:
         return math.ceil(chars / 2) + 512
 
     async def generate(self, contents, system, tools):
-        # Preserve returned Content unchanged, including any opaque thought signatures.
-        thinking = (types.ThinkingConfig(thinking_budget=0) if "2.5" in self.settings.model
-                    else types.ThinkingConfig(thinking_level="MINIMAL"))
-        response = await self.client.aio.models.generate_content(
-            model=self.settings.model, contents=contents,
-            config=types.GenerateContentConfig(
-                system_instruction=system, tools=tools, temperature=0,
-                max_output_tokens=self.settings.max_output_tokens,
-                thinking_config=thinking,
-                automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
-            ),
-        )
+        # Pace requests to remain usable on low-RPM Gemini tiers. The provider
+        # object is shared by the evaluator, so this also spaces separate cases.
+        async with self._call_lock:
+            elapsed = time.monotonic() - self._last_call_at
+            if elapsed < 4.1:
+                await asyncio.sleep(4.1 - elapsed)
+            # Preserve returned Content unchanged, including any opaque thought signatures.
+            thinking = (types.ThinkingConfig(thinking_budget=0) if "2.5" in self.settings.model
+                        else types.ThinkingConfig(thinking_level="MINIMAL"))
+            try:
+                response = await self.client.aio.models.generate_content(
+                    model=self.settings.model, contents=contents,
+                    config=types.GenerateContentConfig(
+                        system_instruction=system, tools=tools, temperature=0,
+                        max_output_tokens=self.settings.max_output_tokens,
+                        thinking_config=thinking,
+                        automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+                    ),
+                )
+            finally:
+                self._last_call_at = time.monotonic()
         usage = response.usage_metadata
         inp = usage.prompt_token_count if usage else None
         out = None
