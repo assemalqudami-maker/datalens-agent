@@ -167,6 +167,7 @@ class Agent:
                         run.cost += reservation
                         run.uncertain_cost = True
                         self.emit(run, "provider_error", error_type=type(exc).__name__,
+                                  status_code=getattr(exc, "code", None) or getattr(exc, "status_code", None),
                                   retained_reservation_usd=reservation)
                         return self.finish(run, "provider_error", "تعذر إكمال اتصال النموذج. تحقق من المفتاح والحصة أو أعد المحاولة لاحقًا. / Provider call failed; reserved cost retained because billing is unknown.")
                     if response.input_tokens is None or response.output_tokens is None:
