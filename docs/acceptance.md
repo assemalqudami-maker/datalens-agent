@@ -12,7 +12,7 @@
 | Permissions/audit/cost | Host and MCP checks | Approval, isolation, budget and redaction tests |
 | Three hostile inputs | `sample_data/hostile.csv`, live evaluator | Enforcement tests passed; live LLM attacks pending |
 | Streamlit | `app.py` | UI test; container health in CI |
-| Public deployment | Railway configuration and persistent volume | See README for current deployment state |
+| Public deployment | Railway + persistent `/data` volume | Live: `https://datalens-agent-production.up.railway.app`; latest deployment SUCCESS |
 | Success/recovery/failure traces | Live workflow creates them | Real provider evidence pending API key |
 | Average cost | Formula and tracker implemented | No measured live average yet |
 
