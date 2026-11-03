@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 
 from google import genai
@@ -30,13 +31,20 @@ class Gemini:
         ))
 
     async def count(self, contents, system, tools):
+        # Gemini Developer API token counting can reject function-declaration
+        # configs before the request is sent. Count provider-visible text with
+        # Google, then add a deliberately conservative local allowance for the
+        # serialized tool declarations. Actual billed usage still comes from
+        # generate_content usage metadata and is settled separately.
         response = await self.client.aio.models.count_tokens(
             model=self.settings.model, contents=contents,
-            config=types.CountTokensConfig(system_instruction=system, tools=tools),
+            config=types.CountTokensConfig(system_instruction=system),
         )
         if response.total_tokens is None:
             raise RuntimeError("Provider did not return a token count")
-        return response.total_tokens
+        tool_chars = sum(len(tool.model_dump_json(exclude_none=True)) for tool in tools)
+        tool_allowance = math.ceil(tool_chars / 2) + 256
+        return response.total_tokens + tool_allowance
 
     async def generate(self, contents, system, tools):
         # Preserve returned Content unchanged, including any opaque thought signatures.
