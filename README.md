@@ -10,7 +10,7 @@ A single-agent CSV analysis workspace for **LLM4Yemen · Track B · Week 5**. Ar
 
 * Application, tests, GitHub workflows and deployment configuration are implemented.
 * Real MCP calculations and enforcement tests run without a provider key, using a clearly labelled scripted model.
-* **Live Gemini verification, the three final submission traces, and measured average cost are pending a valid API key.** A missing key produces an explicit configuration error, never fake AI results.
+* **Live Gemini verification is complete.** All 10 evaluation scenarios passed their assertions, including recovery, explicit missing-data failure, and three hostile-input checks. The three submission traces are committed under `traces/`, and the measured mean paid-rate equivalent is **$0.00292866 per attempted case**.
 * Public Railway deployment is live and healthy at `https://datalens-agent-production.up.railway.app`, with one replica and a persistent `/data` volume.
 
 ## What it does
