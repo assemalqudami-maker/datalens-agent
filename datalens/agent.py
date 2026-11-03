@@ -142,7 +142,10 @@ class Agent:
                     try:
                         count = await asyncio.wait_for(self.provider.count(run.contents, SYSTEM, tools),
                                                        self.settings.timeout_seconds + 5)
-                    except Exception:
+                    except Exception as exc:
+                        self.emit(run, "token_count_error",
+                                  error_type=type(exc).__name__,
+                                  status_code=getattr(exc, "code", None) or getattr(exc, "status_code", None))
                         return self.finish(run, "provider_error", "تعذر تقدير استهلاك الطلب. تحقق من المفتاح والنموذج والحصة. / Token counting failed; check API configuration.")
                     if count > self.settings.max_input_tokens:
                         return self.finish(run, "context_limit", "Input context exceeds the configured limit.")
