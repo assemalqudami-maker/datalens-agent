@@ -1,6 +1,10 @@
 name: Live Gemini evaluation
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/live-eval-trigger'
 permissions:
   contents: read
 concurrency:
