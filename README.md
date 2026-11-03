@@ -11,7 +11,7 @@ A single-agent CSV analysis workspace for **LLM4Yemen · Track B · Week 5**. Ar
 * Application, tests, GitHub workflows and deployment configuration are implemented.
 * Real MCP calculations and enforcement tests run without a provider key, using a clearly labelled scripted model.
 * **Live Gemini verification, the three final submission traces, and measured average cost are pending a valid API key.** A missing key produces an explicit configuration error, never fake AI results.
-* Deployment URL/status will be added after Railway confirms a successful deployment.
+* Public Railway deployment is live and healthy at `https://datalens-agent-production.up.railway.app`, with one replica and a persistent `/data` volume.
 
 ## What it does
 
@@ -53,7 +53,9 @@ GitHub Actions secrets do **not** automatically become Railway variables. Set th
 
 ## Deployment
 
-Railway builds the included Dockerfile from this repository. Mount a persistent volume at `/data` and set `DATALENS_DATA_DIR=/data`. The app binds to Railway's `PORT`; `/_stcore/health` is an application health check only. Use one replica with SQLite. Persistent storage is necessary for memory and budgets to survive container replacement. Hosting costs/quotas depend on your account and are separate from model token costs.
+**Public app:** https://datalens-agent-production.up.railway.app
+
+Railway's latest production deployment completed successfully. The service runs one replica and mounts the persistent `datalens-memory` volume at `/data`. Railway builds the included Dockerfile from this repository. Mount a persistent volume at `/data` and set `DATALENS_DATA_DIR=/data`. The app binds to Railway's `PORT`; `/_stcore/health` is an application health check only. Use one replica with SQLite. Persistent storage is necessary for memory and budgets to survive container replacement. Hosting costs/quotas depend on your account and are separate from model token costs.
 
 ```bash
 docker build -t datalens .
