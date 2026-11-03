@@ -55,18 +55,18 @@ with st.sidebar:
     st.caption(tr("تحليل قابل للتتبع، خطوة بخطوة", "Analysis you can trace, step by step"))
     st.divider()
     st.markdown(tr("**اتصال النموذج**", "**Model connection**"))
-    personal_key = st.text_input(tr("مفتاح Gemini الخاص بك (اختياري)", "Your Gemini API key (optional)"), type="password")
     server_key = os.getenv("GEMINI_API_KEY", "")
     access_code = os.getenv("DATALENS_ACCESS_CODE", "")
     entered_code = st.text_input(tr("رمز الوصول", "Access code"), type="password") if access_code else ""
     server_allowed = not access_code or hmac.compare_digest(entered_code, access_code)
-    api_key = personal_key.strip() or (server_key if server_allowed else "")
-    st.caption(settings.model)
-    if api_key:
-        st.info(tr("المفتاح متوفر؛ الاتصال يُختبر عند التحليل.", "Key available; connectivity is checked during analysis."))
+    api_key = server_key if server_allowed else ""
+    if access_code and not server_allowed:
+        st.warning(tr("أدخل رمز الوصول للمتابعة.", "Enter the access code to continue."))
+    elif server_key:
+        st.success(tr("خدمة الذكاء الاصطناعي جاهزة.", "AI service is configured and ready."))
     else:
-        st.warning(tr("أضف مفتاح Gemini لتشغيل الوكيل.", "Add a Gemini key to run the agent."))
-    st.caption(tr("لا يُحفظ المفتاح في الذاكرة أو السجلات.", "Keys are not saved to memory or traces."))
+        st.error(tr("خدمة الذكاء الاصطناعي غير مهيأة. يرجى التواصل مع المسؤول.", "AI service is not configured. Please contact the administrator."))
+    st.caption(tr("مفتاح الخدمة محفوظ بأمان على الخادم ولا يحتاج المستخدم إلى إدخاله.", "The service key is stored securely on the server; users do not need to enter it."))
     st.divider()
     st.markdown(tr("**حدود المهمة**", "**Task limits**"))
     st.write(f"{settings.max_turns} " + tr("خطوات كحد أقصى", "maximum turns"))
