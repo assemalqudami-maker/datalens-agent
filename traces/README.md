@@ -1,11 +1,11 @@
 # Submission traces
 
-The required final files are:
+These three files are preserved from the successful live Gemini evaluation run on 2026-11-03:
 
-* `success_1.jsonl`
-* `near_failure_recovery.jsonl`
-* `explicit_failure.jsonl`
+* `success_1.jsonl` — successful evidence-based CSV analysis.
+* `near_failure_recovery.jsonl` — a real invalid-column tool error followed by recovery to the correct `revenue` column.
+* `explicit_failure.jsonl` — an honest failed task because the dataset contains no cost data required for exact profit.
 
-They must come from actual live-agent execution. No success or recovery trace is fabricated in this repository. Initial setup lacked `GEMINI_API_KEY`, so the captured `configuration_failure.jsonl` records that real blocker (zero provider calls); it is not a substitute for the three full submission scenarios.
+The evaluation also ran three hostile-input scenarios and all assertions passed. The complete 10-case evidence remains available in the GitHub Actions `live-evidence` artifact for run `41554421307`.
 
-After adding the secret, run **GitHub Actions → Live Gemini evaluation**, review the `live-evidence` artifact, and copy the three verified traces here without editing out errors. The fixture data is explicitly synthetic. Runtime traces from users' private datasets belong in their workspace, not this public folder.
+These are real provider traces from Gemini `gemini-3.5-flash-lite`; they are not scripted-model substitutes. The fixture CSV data is synthetic. Runtime traces from users' private datasets belong in their private workspace, not this public folder.
