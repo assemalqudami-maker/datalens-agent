@@ -311,7 +311,7 @@ with analysis_tab:
             (tr("التكلفة المقدّرة", "Estimated USD cost"),
              "$" + f"{run.cost:.6f}", "$", "neutral"),
         ]
-        for column, (label, value, icon, tone) in zip(st.columns(4, gap="small"), metrics):
+        for column, (label, value, icon, tone) in zip(st.columns(4, gap="small"), metrics, strict=True):
             with column:
                 st.markdown(metric_card_html(label, value, icon, tone), unsafe_allow_html=True)
         st.caption(tr(
