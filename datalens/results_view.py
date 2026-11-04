@@ -124,7 +124,7 @@ def chart_for_evidence(result: Mapping) -> pd.DataFrame | None:
     )
     value_key = next(
         (key for key in ["sum"] + [key for key in keys if key != label_key]
-         if key != label_key and all(
+         if key in keys and key != label_key and all(
              isinstance(row[key], (int, float)) and not isinstance(row[key], bool)
              and math.isfinite(row[key]) for row in rows)),
         None,
