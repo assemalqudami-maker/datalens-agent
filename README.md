@@ -23,7 +23,7 @@ Examples:
 * `Check missing values and duplicate rows.`
 * `Compare branch revenues and prepare a report to save.`
 
-The model picks tools; pandas computes the numbers. The application stops at a final answer, ten model turns, or the configured budget. Missing information is a valid explicit failure.
+The model picks tools; pandas computes the numbers. The redesigned results area includes animated purple KPI cards, a safe structured answer card, measured MCP facts, optional grouped charts, evidence tables and downloadable traces. The application stops at a final answer, ten model turns, or the configured budget. Missing information is a valid explicit failure.
 
 ## Run locally (Python 3.12)
 
@@ -36,7 +36,7 @@ python -m pip install -r requirements.txt
 streamlit run app.py
 ```
 
-Open the displayed localhost URL. Enter your Gemini key in the password field, or copy `.env.example` to `.env` and set `GEMINI_API_KEY`. No source code needs editing. The key is never committed. Default model is `gemini-3.5-flash-lite`; if your account requires a different supported model, set `GEMINI_MODEL` with matching verified prices in `datalens/config.py`. A model being listed in documentation does not guarantee access for every account.
+Open the displayed localhost URL. Copy `.env.example` to `.env` and set `GEMINI_API_KEY` on the server. The key is not requested in the public sidebar. No source code needs editing. The key is never committed. Default model is `gemini-3.5-flash-lite`; if your account requires a different supported model, set `GEMINI_MODEL` with matching verified prices in `datalens/config.py`. A model being listed in documentation does not guarantee access for every account.
 
 ## GitHub Actions
 
@@ -49,7 +49,7 @@ Open the displayed localhost URL. Enter your Gemini key in the password field, o
 3. Open [Live Gemini evaluation](https://github.com/assemalqudami-maker/datalens-agent/actions/workflows/live.yml) → **Run workflow**.
 4. Download `live-evidence`. It contains unchanged traces, per-case assertions and measured cost analysis. Missing credentials fail clearly. Review before copying the three required traces into `traces/`.
 
-GitHub Actions secrets do **not** automatically become Railway variables. Set the deployment's `GEMINI_API_KEY` separately or use the UI's per-session key field. Optionally set `DATALENS_ACCESS_CODE` to restrict use of the deployment owner's key.
+GitHub Actions secrets do **not** automatically become Railway variables. Set the deployment's `GEMINI_API_KEY` separately. Optionally set `DATALENS_ACCESS_CODE` to restrict use of the deployment owner's key.
 
 ## Deployment
 

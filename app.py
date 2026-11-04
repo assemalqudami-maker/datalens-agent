@@ -11,6 +11,13 @@ from datalens.agent import Agent
 from datalens.config import Settings
 from datalens.data import load_csv, upload
 from datalens.provider import ConfigurationError, Gemini
+from datalens.results_view import (
+    chart_for_evidence,
+    evidence_preview,
+    key_facts,
+    metric_card_html,
+    render_answer_html,
+)
 from datalens.storage import Store, scope_id
 
 load_dotenv()
@@ -83,6 +90,53 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {color:#41378f;font-si
 @media (max-width:1000px) {.hero-orb {opacity:.25;right:5%}.hero {padding:32px 28px;min-height:230px}.block-container {padding-inline:1rem}}
 @media (max-width:650px) {.hero {padding:26px 22px;border-radius:19px}.hero h1 {font-size:1.9rem}.hero-orb {display:none}.hero-badge {font-size:.67rem}.step-ribbon {gap:6px}.step-chip {font-size:.7rem}.block-container {padding-top:.75rem}}
 @media (prefers-reduced-motion:reduce) {.hero,.hero::before,.hero::after,.hero-orb,.st-key-upload_panel,.st-key-query_panel {animation:none!important}.stButton>button,.stTextArea textarea,.stTextInput input {transition:none!important}.stButton>button:hover {transform:none}}
+
+/* DataLens result system */
+.results-heading {margin:28px 0 16px}
+.results-overline {color:#7364d8;font-size:.73rem;letter-spacing:1.5px;font-weight:850}
+.results-heading h2 {margin:5px 0 5px;font-size:1.4rem;font-weight:850;color:#272449}
+.results-heading p {margin:0;color:#83869e;font-size:.85rem;line-height:1.7}
+.kpi-card {min-height:134px;position:relative;overflow:hidden;padding:18px;border-radius:20px;background:linear-gradient(145deg,#f4f0ff,#fff);color:#574c9c;border:1px solid #e7e2fc;box-shadow:0 10px 24px #4b408418;transition:transform .22s ease,box-shadow .22s ease;animation:riseIn .55s ease both}
+.kpi-card:hover {transform:translateY(-5px);box-shadow:0 16px 30px #6255b329}
+.kpi-card:after {content:"";position:absolute;inset:auto -40px -85px auto;width:160px;height:160px;border-radius:50%;border:28px solid #998cff12}
+.kpi-main {background:linear-gradient(125deg,#685be8,#8173f6);border-color:transparent;color:#fff}
+.kpi-soft {background:linear-gradient(145deg,#f1edff,#fbfaff);color:#51459a}
+.kpi-deep {background:linear-gradient(125deg,#433581,#6e60cf);border-color:transparent;color:#fff}
+.kpi-neutral {background:linear-gradient(145deg,#fff,#f2efff);color:#5b4ba5}
+.kpi-top {display:flex;justify-content:space-between;gap:8px;align-items:start}
+.kpi-label {font-size:.76rem;font-weight:750;line-height:1.6;opacity:.86}
+.kpi-icon {width:30px;height:30px;display:grid;place-items:center;border-radius:10px;background:#ffffff24;font-size:16px;flex-shrink:0}
+.kpi-soft .kpi-icon,.kpi-neutral .kpi-icon {background:#ddd7ff}
+.kpi-value {margin-top:18px;font-size:clamp(1.1rem,2vw,1.65rem);font-weight:850;line-height:1.3;letter-spacing:-.3px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.quick-facts {display:flex;gap:9px;flex-wrap:wrap;margin:14px 0 18px}
+.fact-chip {display:inline-flex;gap:8px;align-items:center;background:#fff;border:1px solid #e4e2f6;border-radius:13px;padding:10px 13px;color:#55527d;font-size:.81rem;box-shadow:0 5px 13px #4b40840b}
+.fact-chip strong {color:#5d4bd4;font-variant-numeric:tabular-nums}
+.answer-header {display:flex;align-items:center;justify-content:space-between;gap:9px;margin:25px 0 11px}
+.answer-title {display:flex;align-items:center;gap:9px;color:#302858;font-size:1.08rem;font-weight:850}
+.answer-title-icon {display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:#ece8ff;color:#6555d6}
+.answer-label {padding:6px 10px;border-radius:30px;background:#f0edff;color:#7467bd;font-size:.73rem;font-weight:740}
+.answer-card {position:relative;overflow:hidden;background:#fff;border:1px solid #e7e6f2;border-radius:21px;padding:26px 28px 24px;box-shadow:0 12px 30px #3f367313;line-height:1.93;color:#353453;overflow-wrap:anywhere;animation:riseIn .5s ease both}
+.answer-card-accent {position:absolute;top:0;inset-inline-start:0;height:100%;width:5px;background:linear-gradient(#8376f0,#6552d9)}
+.answer-card p {margin:0 0 13px;color:#50516d;font-size:.96rem}
+.answer-card p:last-child {margin-bottom:0}
+.answer-card h3 {font-size:1.04rem;font-weight:830;color:#3a316f;margin:18px 0 10px}
+.answer-card h3:first-of-type {margin-top:0}
+.answer-card strong {color:#4734a8;font-weight:850}
+.answer-card ul,.answer-card ol {padding-inline-start:1.5rem;margin:9px 0 16px}
+.answer-card li {padding:3px 0;line-height:1.8}
+.answer-card li::marker {color:#695ce6;font-weight:800}
+.answer-card code {font-size:.88em;background:#f1efff;padding:2px 5px;border-radius:5px;color:#5d4caa}
+.answer-table-scroll {max-width:100%;overflow-x:auto;margin:15px 0;border:1px solid #e9e7f8;border-radius:13px}
+.answer-table {width:100%;border-collapse:collapse;font-size:.88rem}
+.answer-table th {background:#f3f0ff;color:#4f418d;text-align:start;font-weight:800}
+.answer-table th,.answer-table td {padding:9px 13px;border-bottom:1px solid #eeedf5}
+.answer-table tr:last-child td {border-bottom:0}
+.answer-table tbody tr:nth-child(even) {background:#fcfbff}
+.evidence-intro {margin:22px 0 8px;font-size:.84rem;color:#777995}
+.evidence-tool {display:inline-block;background:#f3f0ff;color:#5e4bd1;padding:7px 12px;border-radius:11px;font-size:.82rem;font-weight:750;margin:13px 0 7px}
+@media(max-width:790px){.kpi-card{min-height:124px;padding:14px}.kpi-value{font-size:1.16rem}.answer-card{padding:20px 18px}}
+@media(max-width:550px){.kpi-card{min-height:105px;padding:11px}.kpi-label{font-size:.68rem}.kpi-value{font-size:1rem}.kpi-icon{width:25px;height:25px}.answer-card{padding:18px 14px}}
+@media(prefers-reduced-motion:reduce){.kpi-card,.answer-card{animation:none!important;transition:none!important}.kpi-card:hover{transform:none}}
 </style>""", unsafe_allow_html=True)
 
 if "workspace_token" not in st.session_state:
@@ -234,22 +288,58 @@ with analysis_tab:
     run = st.session_state.get("run")
     if run:
         st.divider()
-        st.markdown('<div class="section-heading">' + tr("نتائج التحليل", "Analysis results") +
-                    '</div><div class="section-subtitle">' +
-                    tr("الإجابة والتكلفة والأدلة في مكان واحد", "Answer, evidence and costs in one place") +
-                    '</div>', unsafe_allow_html=True)
-        status_text = {"completed": tr("مكتمل", "Completed"), "failed": tr("تعذر إكمال الطلب", "Explicit failure"),
-                       "awaiting_approval": tr("بانتظار الموافقة", "Awaiting approval")}.get(run.status, run.status)
-        a, b, c, d = st.columns(4)
-        a.metric(tr("الحالة", "Status"), status_text)
-        b.metric(tr("خطوات النموذج", "Model turns"), run.turns)
-        c.metric(tr("الرموز المستخدمة", "Tokens"), run.input_tokens + run.output_tokens)
-        d.metric(tr("التكلفة المقدّرة بالدولار", "Estimated USD cost"), f"${run.cost:.6f}")
-        st.caption(tr("التكلفة محسوبة بأسعار الاستخدام المدفوع؛ قد تختلف الفاتورة الفعلية أو الحصة المجانية.", "Cost uses standard paid rates; actual billing or free-tier charges may differ."))
+        st.markdown(
+            '<div class="results-heading"><div class="results-overline">DATALENS · INSIGHTS</div>'
+            '<h2>' + tr("نتائج التحليل", "Analysis results") + '</h2><p>' +
+            tr("إجابتك، المؤشرات الفعلية، والأدلة المستخدمة للوصول إلى النتيجة.",
+               "Your answer, measured facts and the evidence behind every finding.") +
+            '</p></div>', unsafe_allow_html=True,
+        )
+        status_text = {
+            "completed": tr("مكتمل", "Completed"),
+            "failed": tr("تعذر إكمال الطلب", "Explicit failure"),
+            "awaiting_approval": tr("بانتظار الموافقة", "Awaiting approval"),
+            "budget_limit": tr("انتهت الميزانية", "Budget limit"),
+            "max_turns": tr("حد الخطوات", "Turn limit"),
+            "provider_error": tr("خطأ اتصال", "Provider error"),
+        }.get(run.status, run.status)
+        metrics = [
+            (tr("الحالة", "Status"), status_text, "✓", "main"),
+            (tr("خطوات النموذج", "Model turns"), f"{run.turns:,}", "↻", "soft"),
+            (tr("الرموز المستخدمة", "Tokens used"),
+             f"{run.input_tokens + run.output_tokens:,}", "◈", "deep"),
+            (tr("التكلفة المقدّرة", "Estimated USD cost"),
+             "$" + f"{run.cost:.6f}", "$", "neutral"),
+        ]
+        for column, (label, value, icon, tone) in zip(st.columns(4, gap="small"), metrics):
+            with column:
+                st.markdown(metric_card_html(label, value, icon, tone), unsafe_allow_html=True)
+        st.caption(tr(
+            "التكلفة تقديرية وفق أسعار الاستخدام المدفوع؛ قد تختلف الفاتورة أو الحصة المجانية.",
+            "Estimated at paid rates; actual billing or free-tier charges may differ.",
+        ))
+        facts = key_facts(run.evidence, arabic=ar)
+        if facts:
+            from html import escape
+
+            chips = "".join(
+                '<span class="fact-chip"><span>' + escape(label) +
+                '</span><strong>' + f"{value:,}" + '</strong></span>'
+                for label, value in facts
+            )
+            st.markdown('<div class="quick-facts">' + chips + '</div>',
+                        unsafe_allow_html=True)
         if run.uncertain_cost:
-            st.warning(tr("تشمل التكلفة حجزًا لاستدعاء لم تتوفر بيانات استهلاكه.", "Cost includes a reservation for a call whose usage is unknown."))
+            st.warning(tr(
+                "تشمل التكلفة حجزًا لاستدعاء لم تتوفر بيانات استهلاكه.",
+                "Cost includes a reservation for a call whose usage is unknown.",
+            ))
+
         if run.status == "awaiting_approval":
-            st.warning(tr("الوكيل يريد حفظ التقرير التالي. راجعه قبل الموافقة.", "The agent wants to save this report. Review it before approving."))
+            st.warning(tr(
+                "الوكيل يريد حفظ التقرير التالي. راجعه قبل الموافقة.",
+                "The agent wants to save this report. Review it before approving.",
+            ))
             st.text(run.pending["content"])
             approve_col, reject_col = st.columns(2)
             approve = approve_col.button(tr("موافقة وحفظ", "Approve and save"), type="primary")
@@ -262,22 +352,75 @@ with analysis_tab:
                 except ConfigurationError as exc:
                     st.error(str(exc))
         elif run.answer:
-            st.subheader(tr("النتيجة", "Answer"))
-            st.text(run.answer)  # Plain text prevents model-generated HTML or remote image requests.
-        with st.expander(tr("النتائج التي استند إليها الوكيل", "Tool evidence")):
+            st.markdown(
+                '<div class="answer-header"><div class="answer-title">'
+                '<span class="answer-title-icon" aria-hidden="true">✦</span>' +
+                tr("إجابة الوكيل", "Agent answer") +
+                '</div><span class="answer-label">' +
+                tr("نص الإجابة الأصلي", "Original answer") +
+                '</span></div>', unsafe_allow_html=True,
+            )
+            st.markdown(render_answer_html(run.answer, arabic=ar), unsafe_allow_html=True)
+            st.download_button(
+                tr("تنزيل الإجابة النصية", "Download answer as text"),
+                str(run.answer).encode("utf-8"), "datalens-answer.txt", "text/plain",
+            )
+
+        st.markdown(
+            '<div class="evidence-intro">' +
+            tr("التفاصيل التالية من نتائج أدوات MCP الفعلية، دون إضافة أرقام مُولّدة.",
+               "Evidence below comes from actual MCP tool results, with no generated numbers.") +
+            '</div>', unsafe_allow_html=True,
+        )
+        with st.expander(tr("◈ الأدلة والبيانات المصدرية", "◈ Evidence and source data")):
+            if not run.evidence:
+                st.info(tr("لا توجد أدلة مسجلة لهذه المهمة.", "No tool evidence recorded."))
             for ident, evidence in run.evidence.items():
-                st.markdown(f"**{ident} · {evidence['tool']}**")
-                st.json(evidence["result"], expanded=False)
-                report = evidence["result"].get("report_id", "")
-                if evidence["tool"] == "save_report" and Path(report).name == report:
-                    path = workspace / "reports" / report
-                    if path.is_file():
-                        st.download_button(tr("تنزيل التقرير", "Download report"), path.read_bytes(), "datalens-report.md", key=ident)
-        with st.expander(tr("سجل الخطوات والتكلفة", "Execution and cost trace")):
-            for event in run.events:
+                name = evidence.get("tool", "")
+                known_tools = {
+                    "inspect_dataset", "check_data_quality", "summarize_numeric",
+                    "aggregate_data", "filter_rows", "compare_groups", "save_report",
+                }
+                safe_name = name if name in known_tools else "MCP tool"
+                st.markdown('<span class="evidence-tool">' + ident + " · " + safe_name +
+                            '</span>', unsafe_allow_html=True)
+                result = evidence.get("result", {})
+                if isinstance(result, dict):
+                    preview = evidence_preview(result)
+                    if preview:
+                        _, data = preview
+                        st.dataframe(data, hide_index=True, width="stretch")
+                    chart = chart_for_evidence(result)
+                    if chart is not None:
+                        st.caption(tr(
+                            "رسم من بيانات التجميع الفعلية (قد تُعرض مجموعات جزئية).",
+                            "Chart of returned groups (results may be truncated).",
+                        ))
+                        st.bar_chart(chart, width="stretch", color="#7568e8")
+                    st.json(result, expanded=False)
+                    report = result.get("report_id", "")
+                    if (safe_name == "save_report" and isinstance(report, str)
+                            and report and Path(report).name == report):
+                        path = workspace / "reports" / report
+                        if path.is_file():
+                            st.download_button(
+                                tr("تنزيل التقرير", "Download report"),
+                                path.read_bytes(), "datalens-report.md", key=ident,
+                            )
+                else:
+                    st.json(result, expanded=False)
+
+        with st.expander(tr("◷ سجل الخطوات والتكلفة", "◷ Execution trace and cost")):
+            if not run.events:
+                st.info(tr("لا توجد خطوات مسجلة.", "No recorded steps."))
+            for index, event in enumerate(run.events, 1):
+                name = str(event.get("event", "event")) if isinstance(event, dict) else "event"
+                st.caption(f"{index:02d} · {name}")
                 st.json(event, expanded=False)
-        st.download_button(tr("تنزيل سجل JSONL", "Download JSONL trace"),
-                           Path(run.trace_path).read_bytes(), f"{run.task_id}.jsonl", "application/x-ndjson")
+        st.download_button(
+            tr("تنزيل سجل JSONL", "Download JSONL trace"),
+            Path(run.trace_path).read_bytes(), f"{run.task_id}.jsonl", "application/x-ndjson",
+        )
 
 with memory_tab:
     st.subheader(tr("مهامك السابقة", "Your previous tasks"))
@@ -291,7 +434,7 @@ with memory_tab:
             st.caption(f"{item['status']} · ${item['cost']:.6f} · {item['created']}")
 
 with about_tab:
-    st.markdown(tr("**وكيل واحد، ثماني أدوات، وقرار يمكن تتبعه.**", "**One agent, eight tools, traceable decisions.**"))
+    st.markdown(tr("**وكيل واحد، سبع أدوات، وقرار يمكن تتبعه.**", "**One agent, seven tools, traceable decisions.**"))
     st.write(tr("يقرر Gemini الخطوة التالية، وتنفّذ أدوات MCP الحسابات باستخدام pandas. يتوقف الوكيل عند الإجابة النهائية أو حد الخطوات أو الميزانية.", "Gemini chooses the next step; MCP tools calculate with pandas. The agent stops at a final answer, turn limit or budget limit."))
     st.write(tr("يمكنه تلخيص الأعمدة والتجميع والتصفية ومقارنة المجموعات وفحص الجودة. لا يعدّل ملفك الأصلي، ولا ينفّذ أكوادًا حرة.", "Summarize, aggregate, filter, compare groups and check data quality. The source CSV is unchanged; arbitrary code execution is unavailable."))
     st.caption(tr("إثبات الفشل جزء من المشروع: عند غياب بيانات لازمة، يجب أن يشرح سبب العجز.", "Explicit failure is part of the project: missing required data must lead to an honest explanation."))
